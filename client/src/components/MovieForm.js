@@ -2,6 +2,10 @@ import { useState } from "react";
 import styled from "styled-components";
 
 function MovieForm() {
+
+
+
+  const [erorrs, setErrors] = useState([])
   const [formData, setFormData] = useState({
     title: "",
     year: new Date().getFullYear(),
@@ -14,17 +18,26 @@ function MovieForm() {
     female_director: false,
   });
 
-  function handleSubmit(e) {
+  // putting ASYNC allows us to use the await keyword 
+  async function handleSubmit(e) {
     e.preventDefault();
-    fetch("/movies", {
+
+    //  here we are setting the response received from our request to a variable
+    // fetch returns a Promise, we MUST await it 
+    const response = await fetch("/movies", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formData),
-    })
-      .then((response) => response.json())
-      .then((newMovie) => console.log(newMovie));
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      console.log("Movie Created", data)
+    } else {
+      setErrors(data.errors);
+   }
   }
 
   function handleChange(e) {
@@ -126,6 +139,14 @@ function MovieForm() {
           </label>
         </FormGroup>
         <SubmitButton type="submit">Add Movie</SubmitButton>
+        {erorrs.length > 0 && (
+          <ul style={{ color: "red"}}>
+            {erorrs.map(error => 
+              <li key={error}>{error}</li>
+            )}
+          </ul>
+        )}
+
       </form>
     </Wrapper>
   );
